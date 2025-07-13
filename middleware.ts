@@ -15,6 +15,26 @@ export async function middleware(request: NextRequest) {
   const isPrivate = privateRoutes.some(route => pathname.startsWith(route));
   const isPublic = publicRoutes.some(route => pathname.startsWith(route));
 
+  const updateCookiesFromSetCookieHeader = (setCookie: string[] | string, response: NextResponse) => {
+    const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
+
+    for (const cookieStr of cookieArray) {
+      const parsed = parse(cookieStr);
+      const options = {
+        expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
+        path: parsed.Path || '/',
+        maxAge: parsed['Max-Age'] ? Number(parsed['Max-Age']) : undefined,
+      };
+
+      if (parsed.accessToken) {
+        response.cookies.set('accessToken', parsed.accessToken, options);
+      }
+      if (parsed.refreshToken) {
+        response.cookies.set('refreshToken', parsed.refreshToken, options);
+      }
+    }
+  };
+
   if (isPrivate) {
     if (!accessToken) {
       if (refreshToken) {
@@ -22,24 +42,12 @@ export async function middleware(request: NextRequest) {
         const setCookie = apiRes.headers['set-cookie'];
 
         if (setCookie) {
-          const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
-          for (const cookieStr of cookieArray) {
-            const parsed = parse(cookieStr);
-            const options = {
-              expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
-              path: parsed.Path,
-              maxAge: Number(parsed['Max-Age']),
-            };
-            if (parsed.accessToken) cookieStore.set('accessToken', parsed.accessToken, options);
-            if (parsed.refreshToken) cookieStore.set('refreshToken', parsed.refreshToken, options);
-          }
-          return NextResponse.next({
-            headers: {
-              Cookie: cookieStore.toString(),
-            },
-          });
+          const response = NextResponse.next();
+          updateCookiesFromSetCookieHeader(setCookie, response);
+          return response;
         }
       }
+
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
   }
@@ -51,28 +59,15 @@ export async function middleware(request: NextRequest) {
         const setCookie = apiRes.headers['set-cookie'];
 
         if (setCookie) {
-          const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
-          for (const cookieStr of cookieArray) {
-            const parsed = parse(cookieStr);
-            const options = {
-              expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
-              path: parsed.Path,
-              maxAge: Number(parsed['Max-Age']),
-            };
-
-            if (parsed.accessToken) cookieStore.set('accessToken', parsed.accessToken, options);
-            if (parsed.refreshToken) cookieStore.set('refreshToken', parsed.refreshToken, options);
-          }
-
-          return NextResponse.redirect(new URL('/', request.url), {
-            headers: {
-              Cookie: cookieStore.toString(),
-            },
-          });
+          const response = NextResponse.redirect(new URL('/', request.url));
+          updateCookiesFromSetCookieHeader(setCookie, response);
+          return response;
         }
       }
+
       return NextResponse.next();
     }
+
     return NextResponse.redirect(new URL('/', request.url));
   }
 

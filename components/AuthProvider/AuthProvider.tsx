@@ -10,14 +10,20 @@ interface AuthProviderProps {
 }
 
 export default function AuthProvider({ children }: AuthProviderProps) {
+  const setUser = useAuthStore(state => state.setUser);
+  const clearIsAuthenticated = useAuthStore(state => state.clearIsAuthenticated);
+
   const [loading, setLoading] = useState(true);
-  const { setUser, clearIsAuthenticated } = useAuthStore();
 
   useEffect(() => {
     async function initializeAuth() {
       try {
-        const sessionUser = await checkSession(); 
-        setUser(sessionUser); 
+        const sessionUser = await checkSession();
+        if (sessionUser && sessionUser.email) {
+          setUser(sessionUser);
+        } else {
+          clearIsAuthenticated();
+        }
       } catch {
         clearIsAuthenticated();
       } finally {
