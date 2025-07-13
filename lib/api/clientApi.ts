@@ -1,8 +1,9 @@
 'use client';
 
 import { Note } from '@/types/note';
-import { EditUserPayload, User } from '@/types/noteApi';
+import { EditUserPayload } from '@/types/noteApi';
 import { nextServer } from './api';
+import { User } from '@/types/user';
 
 export interface CreateNoteValues {
   title: string;

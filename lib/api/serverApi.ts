@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
 import { nextServer } from './api';
-import { SessionValidationResult, User } from '@/types/noteApi'; 
+import { SessionValidationResult } from '@/types/noteApi'; 
 import { Note } from '@/types/note';
+import { User } from '@/types/user';
 
 export async function fetchServerNoteById(id: string): Promise<Note> {
 	const cookieStore = await cookies();
