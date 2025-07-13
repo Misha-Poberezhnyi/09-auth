@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from '@/lib/api/clientApi';
+import { loginUser } from '@/lib/api/clientApi'; 
 import { useAuthStore } from '@/lib/store/authStore';
 import css from './SignInPage.module.css';
 import * as Yup from 'yup';
@@ -54,9 +54,9 @@ export default function SignInPage() {
     }
 
     try {
-      const res = await signIn(formData);
-      if (res) {
-        setUser(res.data);
+      const user = await loginUser(formData); 
+      if (user) {
+        setUser(user); 
         router.push('/profile');
       } else {
         setError('Invalid login data');

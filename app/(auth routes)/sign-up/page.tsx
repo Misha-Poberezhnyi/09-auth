@@ -1,13 +1,13 @@
 'use client';
 
 import css from './SignUpPage.module.css';
-import { signUp } from '@/lib/api/clientApi';
-import { RegisterRequest } from '@/types/noteApi';  
+import { registerUser } from '@/lib/api/clientApi'; 
+import { RegisterRequest } from '@/types/noteApi';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAuthStore } from '@/lib/store/authStore';
 import * as Yup from 'yup';
-import { RegisterFormValues } from '@/types/noteApi';  
+import { RegisterFormValues } from '@/types/noteApi';
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().required('Email is required').email('Enter a valid email address'),
@@ -54,9 +54,9 @@ export default function SignUpPage() {
     }
 
     try {
-      const res = await signUp(formRegisterData as RegisterRequest);  // Замінив тип
-      if (res) {
-        setUser(res.data);
+      const user = await registerUser(formRegisterData as RegisterRequest); 
+      if (user) {
+        setUser(user); 
         router.push('/profile');
       } else {
         setError('Invalid registration data');

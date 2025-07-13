@@ -11,6 +11,8 @@ import { useAuthStore } from '@/lib/store/authStore';
 
 export default function ProfileEditPage() {
   const me = useAuthStore(state => state.user);  
+  const updateAuthUser = useAuthStore(state => state.setUser); 
+
   const [user, setUser] = useState<User | null>(me);
   const router = useRouter();
 
@@ -19,19 +21,19 @@ export default function ProfileEditPage() {
     const formData = new FormData(e.target as HTMLFormElement);
     const data = Object.fromEntries(formData) as FormType;
 
-    if (!data.username.trim() || !user) {
-      return; 
-    }
+    if (!data.username.trim() || !user) return;
 
     try {
       const response = await editUser({
-        email: user?.email,
+        email: user.email,
         username: data.username,
       });
-      setUser(response);  
-      router.push('/profile');  
+
+      setUser(response);        
+      updateAuthUser(response);  
+      router.push('/profile');
     } catch (error) {
-      throw error;
+      console.error('Failed to update user:', error);
     }
   };
 
@@ -44,12 +46,24 @@ export default function ProfileEditPage() {
       <div className={css.profileCard}>
         <h1 className={css.formTitle}>Edit Profile</h1>
 
-        <Image src={user?.avatar || '/default-avatar.png'} alt="User Avatar" width={120} height={120} className={css.avatar} />
+        <Image
+          src={user?.avatar || '/default-avatar.png'}
+          alt="User Avatar"
+          width={120}
+          height={120}
+          className={css.avatar}
+        />
 
         <form className={css.profileInfo} onSubmit={handleEditName}>
           <div className={css.usernameWrapper}>
             <label htmlFor="username">Username:</label>
-            <input name="username" id="username" type="text" className={css.input} defaultValue={user?.username} />
+            <input
+              name="username"
+              id="username"
+              type="text"
+              className={css.input}
+              defaultValue={user?.username}
+            />
           </div>
 
           <p>Email: {user?.email}</p>

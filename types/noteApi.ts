@@ -20,10 +20,11 @@ export interface RegisterFormValues {
   password: string;
 }
 
-export type SessionValidationResult = {
+export type CheckSessionResult = {
   success: boolean;
 };
 
 export type FormType = {
   username: string;
 };
+

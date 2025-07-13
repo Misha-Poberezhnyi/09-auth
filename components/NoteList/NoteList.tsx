@@ -12,36 +12,35 @@ interface NoteListProps {
 
 export default function NoteList({ notes }: NoteListProps) {
   const [deletingNoteId, setDeletingNoteId] = useState<Note['id'] | null>(null);
-
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (id: Note['id']) => deleteNote(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
-      setDeletingNoteId(null); 
+      setDeletingNoteId(null);
     },
     onError: () => {
-      setDeletingNoteId(null); 
+      setDeletingNoteId(null);
     },
   });
 
   const { status, isError, error } = mutation;
-  const isEmpty = notes.length === 0; 
+  const isEmpty = notes.length === 0;
 
-  const handleDelete = (id: number) => {
-    setDeletingNoteId(id); 
-    mutation.mutate(id); 
+  const handleDelete = (id: Note['id']) => {
+    setDeletingNoteId(id);
+    mutation.mutate(id);
   };
 
   return (
     <>
       <QueryStatus
-        isLoading={status === 'pending'}  
+        isLoading={status === 'pending'}
         isError={isError}
         error={error}
         isEmpty={isEmpty}
-        emptyMessage="No notes available." 
+        emptyMessage="No notes available."
       />
 
       <ul className={cssStyles.list}>
@@ -56,12 +55,12 @@ export default function NoteList({ notes }: NoteListProps) {
               </Link>
               <button
                 className={cssStyles.button}
-                onClick={() => handleDelete(note.id)} 
-                disabled={deletingNoteId === note.id} 
+                onClick={() => handleDelete(note.id)}
+                disabled={deletingNoteId === note.id}
               >
                 {deletingNoteId !== note.id ? 'Delete' : 'In progress'}
                 {deletingNoteId === note.id && (
-                  <span className={cssStyles.loader}>...</span> 
+                  <span className={cssStyles.loader}>...</span>
                 )}
               </button>
             </div>

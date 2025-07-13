@@ -1,9 +1,9 @@
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import { validateUserSession } from './lib/api/serverApi';
+import { checkSession } from './lib/api/serverApi';
 import { parse } from 'cookie';
 
-const privateRoutes = ['/profile'];
+const privateRoutes = ['/profile', '/notes'];
 const publicRoutes = ['/sign-in', '/sign-up'];
 
 export async function middleware(request: NextRequest) {
@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
   if (isPrivate) {
     if (!accessToken) {
       if (refreshToken) {
-        const apiRes = await validateUserSession();
+        const apiRes = await checkSession();
         const setCookie = apiRes.headers['set-cookie'];
 
         if (setCookie) {
@@ -47,7 +47,7 @@ export async function middleware(request: NextRequest) {
   if (isPublic) {
     if (!accessToken) {
       if (refreshToken) {
-        const apiRes = await validateUserSession();
+        const apiRes = await checkSession();
         const setCookie = apiRes.headers['set-cookie'];
 
         if (setCookie) {
@@ -64,7 +64,7 @@ export async function middleware(request: NextRequest) {
             if (parsed.refreshToken) cookieStore.set('refreshToken', parsed.refreshToken, options);
           }
 
-          return NextResponse.redirect(new URL('/profile', request.url), {
+          return NextResponse.redirect(new URL('/', request.url), {
             headers: {
               Cookie: cookieStore.toString(),
             },
@@ -73,12 +73,17 @@ export async function middleware(request: NextRequest) {
       }
       return NextResponse.next();
     }
-    return NextResponse.redirect(new URL('/profile', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/profile/:path*', '/sign-in', '/sign-up'],
+  matcher: [
+    '/profile/:path*',
+    '/notes/:path*',
+    '/sign-in',
+    '/sign-up',
+  ],
 };
