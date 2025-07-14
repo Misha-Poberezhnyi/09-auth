@@ -5,18 +5,29 @@ import css from './AuthNavigation.module.css';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
-import { logout } from '@/lib/api/clientApi';
+import { logout, getUserProfile } from '@/lib/api/clientApi';
 
 export default function AuthNavigation() {
-  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  const user = useAuthStore(state => state.user);
-  const clearIsAuthenticated = useAuthStore(state => state.clearIsAuthenticated);
+  const { isAuthenticated, user, setIsAuthenticated, setUser, clearIsAuthenticated } = useAuthStore();
   const router = useRouter();
-
   const [hasMounted, setHasMounted] = useState(false);
+
   useEffect(() => {
     setHasMounted(true);
+
+    const initializeAuth = async () => {
+      try {
+        const user = await getUserProfile(); 
+        setIsAuthenticated(true);
+        setUser(user);
+      } catch {
+        clearIsAuthenticated(); 
+      }
+    };
+
+    initializeAuth();
   }, []);
+
   if (!hasMounted) return null;
 
   const handleLogout = async () => {
